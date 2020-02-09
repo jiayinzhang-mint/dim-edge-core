@@ -1,4 +1,4 @@
-module dim-edge
+module dim-edge-core
 
 go 1.13
 
