@@ -1,47 +1,73 @@
 package main
 
 import (
-	"flag"
+	"dim-edge-core/k8s"
+	"io"
+	"net/http"
 	"os"
-	"path/filepath"
 
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"golang.org/x/sync/errgroup"
+)
+
+func connectToK8S(c *k8s.Client) (err error) {
+	if err = c.ConnectToInstance(); err != nil {
+		logrus.Error("dim-edge core failed to connect to k8s", err)
+		return
+	}
+
+	logrus.Info("dim-edge core connected to k8s")
+	return
+}
+
+func handleRequests(c *k8s.Client) (err error) {
+	router := mux.NewRouter().StrictSlash(true)
+
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "dim-edge core REST service listening")
+	}).Methods("GET")
+
+	c.InitK8SAPI(router)
+
+	if err = http.ListenAndServe(":5000", router); err != nil {
+		logrus.Error("dim-edge core HTTP service failed to start", err)
+		return
+	}
+
+	logrus.Info("dim-edge core HTTP service started")
+	return
+}
+
+var (
+	g errgroup.Group
 )
 
 func main() {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "")
-	}
-	flag.Parse()
+	logrus.Info("dim-edge core service starting")
 
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	// create k8s client
+	c := &k8s.Client{
+		Path: homeDir(),
+	}
+
+	var (
+		err error
+	)
+
+	// connect to k8s instance
+	err = connectToK8S(c)
 	if err != nil {
-		panic(err.Error())
+		logrus.Fatal(err)
+		os.Exit(1)
 	}
 
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	// start http service
+	err = handleRequests(c)
 	if err != nil {
-		panic(err.Error())
+		logrus.Fatal(err)
+		os.Exit(1)
 	}
-
-	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-	logrus.Printf("There are %d pods in the cluster\n", len(pods.Items))
-
-	for i := range pods.Items {
-		logrus.Info(pods.Items[i].Name, "  ", pods.Items[i].Status.StartTime)
-	}
-
 }
 
 func homeDir() string {
