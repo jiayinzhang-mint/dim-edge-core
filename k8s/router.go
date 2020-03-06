@@ -11,8 +11,12 @@ import (
 // InitK8SAPI init k8s REST api
 func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter := r.PathPrefix("/api/k8s").Subrouter()
+
 	privateRouter.HandleFunc("/service/list", c.handleGetServiceList).Methods("GET")
 	privateRouter.HandleFunc("/service", c.handleGetSingleService).Methods("GET")
+
+	privateRouter.HandleFunc("/pod/list", c.handleGetPodList).Methods("GET")
+	privateRouter.HandleFunc("/pod", c.handleGetSinglePod).Methods("GET")
 
 	privateRouter.HandleFunc("/namespace/list", c.handleGetNamespaceList).Methods("GET")
 
@@ -43,6 +47,37 @@ func (c *Client) handleGetSingleService(w http.ResponseWriter, r *http.Request) 
 	name := r.URL.Query().Get("name")
 
 	if s, err = c.GetSingleService(namespace, name); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetPodList(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *v1.PodList
+		err error
+	)
+	namespace := r.URL.Query().Get("namespace")
+
+	if s, err = c.GetPodList(namespace); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetSinglePod(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *v1.Pod
+		err error
+	)
+	namespace := r.URL.Query().Get("namespace")
+	name := r.URL.Query().Get("name")
+
+	if s, err = c.GetSinglePod(namespace, name); err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}
