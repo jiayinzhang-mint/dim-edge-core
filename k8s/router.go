@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	v1 "k8s.io/api/core/v1"
+	metricsv1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 // InitK8SAPI init k8s REST api
@@ -17,6 +18,7 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 
 	privateRouter.HandleFunc("/pod/list", c.handleGetPodList).Methods("GET")
 	privateRouter.HandleFunc("/pod", c.handleGetSinglePod).Methods("GET")
+	privateRouter.HandleFunc("/pod/metrics/list", c.handleGetPodMetricsList).Methods("GET")
 
 	privateRouter.HandleFunc("/volume/claim/list", c.handleGetVolumeClaimList).Methods("GET")
 	privateRouter.HandleFunc("/volume/list", c.handleGetVolumeList).Methods("GET")
@@ -136,6 +138,20 @@ func (c *Client) handleGetNamespaceList(w http.ResponseWriter, r *http.Request) 
 	)
 
 	if s, err = c.GetNamespaceList(); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetPodMetricsList(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *metricsv1.PodMetricsList
+		err error
+	)
+
+	if s, err = c.GetPodMetrics(); err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}

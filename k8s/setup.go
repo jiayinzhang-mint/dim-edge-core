@@ -6,12 +6,14 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	metricsv "k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
 // Client k8s client instance
 type Client struct {
-	Path      string `json:"path"`
-	ClientSet *kubernetes.Clientset
+	Path             string `json:"path"`
+	ClientSet        *kubernetes.Clientset
+	MetricsClientSet *metricsv.Clientset
 }
 
 // ConnectToInstance connect to k8s
@@ -30,6 +32,11 @@ func (c *Client) ConnectToInstance() (err error) {
 
 	// create the clientset
 	c.ClientSet, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return
+	}
+
+	c.MetricsClientSet, err = metricsv.NewForConfig(config)
 	if err != nil {
 		return
 	}
