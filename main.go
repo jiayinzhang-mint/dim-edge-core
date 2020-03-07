@@ -17,7 +17,7 @@ func connectToK8S(c *k8s.Client) (err error) {
 		return
 	}
 
-	logrus.Info("dim-edge core connected to k8s")
+	logrus.Info("🥳 dim-edge core connected to k8s")
 	return
 }
 
@@ -30,12 +30,15 @@ func handleRequests(c *k8s.Client) (err error) {
 
 	c.InitK8SAPI(router)
 
-	if err = http.ListenAndServe(":5000", router); err != nil {
-		logrus.Error("dim-edge core HTTP service failed to start", err)
+	addr := ":5000"
+
+	logrus.Info("🤣 dim-edge core HTTP service started at ", addr)
+	err = http.ListenAndServe(addr, router)
+	if err != nil {
+		logrus.Error("💣 dim-edge core HTTP service failed to start", err)
 		return
 	}
 
-	logrus.Info("dim-edge core HTTP service started")
 	return
 }
 
@@ -44,7 +47,7 @@ var (
 )
 
 func main() {
-	logrus.Info("dim-edge core service starting")
+	logrus.Info("👀 dim-edge core service starting")
 
 	// create k8s client
 	c := &k8s.Client{

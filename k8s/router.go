@@ -34,8 +34,12 @@ func (c *Client) handleGetServiceList(w http.ResponseWriter, r *http.Request) {
 		err error
 	)
 	namespace := r.URL.Query().Get("namespace")
+	matchLabels := make(map[string]string)
+	if serviceName := r.URL.Query().Get("serviceName"); serviceName != "" {
+		matchLabels["io.kompose.service"] = serviceName
+	}
 
-	if s, err = c.GetServiceList(namespace); err != nil {
+	if s, err = c.GetServiceList(namespace, matchLabels); err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}
@@ -94,6 +98,26 @@ func (c *Client) handleGetSinglePod(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func (c *Client) handleGetPodMetricsList(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *metricsv1.PodMetricsList
+		err error
+	)
+
+	namespace := r.URL.Query().Get("namespace")
+	matchLabels := make(map[string]string)
+	if serviceName := r.URL.Query().Get("serviceName"); serviceName != "" {
+		matchLabels["io.kompose.service"] = serviceName
+	}
+
+	if s, err = c.GetPodMetricsList(namespace, matchLabels); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
 func (c *Client) handleGetVolumeClaimList(w http.ResponseWriter, r *http.Request) {
 	var (
 		s   *v1.PersistentVolumeClaimList
@@ -138,20 +162,6 @@ func (c *Client) handleGetNamespaceList(w http.ResponseWriter, r *http.Request) 
 	)
 
 	if s, err = c.GetNamespaceList(); err != nil {
-		utils.RespondWithError(w, r, 500, err.Error())
-		return
-	}
-	utils.RespondWithJSON(w, r, 200, s)
-	return
-}
-
-func (c *Client) handleGetPodMetricsList(w http.ResponseWriter, r *http.Request) {
-	var (
-		s   *metricsv1.PodMetricsList
-		err error
-	)
-
-	if s, err = c.GetPodMetrics(); err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}
