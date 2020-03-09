@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	appv1 "k8s.io/api/apps/v1"
+	scalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metricsv1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
@@ -18,6 +19,7 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/statefulset/list", c.handleGetStatefulSetList).Methods("GET")
 	privateRouter.HandleFunc("/statefulset", c.handleGetOneStatefulSet).Methods("GET")
 	privateRouter.HandleFunc("/statefulset", c.handleCreateStatefulSet).Methods("POST")
+	privateRouter.HandleFunc("/statefulset/scale", c.handleUpdateStatefulSetScale).Methods("PUT")
 
 	privateRouter.HandleFunc("/node/list", c.handleGetNodeList).Methods("GET")
 	privateRouter.HandleFunc("/node", c.handleGetOneNode).Methods("GET")
@@ -89,8 +91,34 @@ func (c *Client) handleCreateStatefulSet(w http.ResponseWriter, r *http.Request)
 	}
 
 	newStatefulSet, err = c.CreateStatefulSet(s.Namespace, s)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
 
 	utils.RespondWithJSON(w, r, 200, newStatefulSet)
+	return
+}
+
+func (c *Client) handleUpdateStatefulSetScale(w http.ResponseWriter, r *http.Request) {
+	var (
+		s        *scalev1.Scale
+		newScale *scalev1.Scale
+		err      error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	newScale, err = c.UpdateStatefulSetScale(s.Namespace, s.Name, s.Spec.Replicas)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, newScale)
 	return
 }
 

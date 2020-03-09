@@ -2,7 +2,7 @@ package k8s
 
 import (
 	appv1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/autoscaling/v1"
+	scalev1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -32,10 +32,14 @@ func (c *Client) CreateStatefulSet(namespace string, ori *appv1.StatefulSet) (s 
 }
 
 // UpdateStatefulSetScale update statefulset scale
-func (c *Client) UpdateStatefulSetScale(namespace string, name string, replicas int) (s *v1.Scale, err error) {
-	s, err = c.ClientSet.AppsV1().StatefulSets(namespace).UpdateScale(name, &v1.Scale{
-		Spec: v1.ScaleSpec{
-			Replicas: int32(replicas),
+func (c *Client) UpdateStatefulSetScale(namespace string, name string, replicas int32) (s *scalev1.Scale, err error) {
+	s, err = c.ClientSet.AppsV1().StatefulSets(namespace).UpdateScale(name, &scalev1.Scale{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: scalev1.ScaleSpec{
+			Replicas: replicas,
 		},
 	})
 	return
