@@ -1,0 +1,3 @@
+[submodule "module/dim-edge-node"]
+	path = module/dim-edge-node
+	url = git@github.com:mintxtinm/dim-edge-node.git
