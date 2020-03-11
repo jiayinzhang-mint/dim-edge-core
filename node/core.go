@@ -4,6 +4,7 @@ import (
 	"dim-edge-core/protocol"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -28,6 +29,7 @@ func (c *Client) New() (err error) {
 	}
 
 	c.Store = protocol.NewStoreServiceClient(c.Conn)
+	logrus.Info("🥳 dim-edge-core connected to dim-edge-node grpc service at ", c.Address)
 
 	return
 }
