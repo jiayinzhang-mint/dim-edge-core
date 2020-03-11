@@ -1,6 +1,8 @@
 package node
 
 import (
+	"dim-edge-core/protocol"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -10,6 +12,7 @@ type Client struct {
 	Address string
 	Options []grpc.DialOption
 	Conn    *grpc.ClientConn
+	Store   protocol.StoreServiceClient
 }
 
 // New create new node client
@@ -23,6 +26,8 @@ func (c *Client) New() (err error) {
 			c.Address)
 		return
 	}
+
+	c.Store = protocol.NewStoreServiceClient(c.Conn)
 
 	return
 }

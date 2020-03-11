@@ -35,7 +35,9 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/pod/metrics", c.handleGetOnePodMetrics).Methods("GET")
 
 	privateRouter.HandleFunc("/volume/claim/list", c.handleGetVolumeClaimList).Methods("GET")
+	privateRouter.HandleFunc("/volume/claim", c.handleGetOneVolumeClaim).Methods("GET")
 	privateRouter.HandleFunc("/volume/list", c.handleGetVolumeList).Methods("GET")
+	privateRouter.HandleFunc("/volume", c.handleGetOneVolume).Methods("GET")
 
 	privateRouter.HandleFunc("/namespace/list", c.handleGetNamespaceList).Methods("GET")
 
@@ -317,6 +319,22 @@ func (c *Client) handleGetVolumeClaimList(w http.ResponseWriter, r *http.Request
 	return
 }
 
+func (c *Client) handleGetOneVolumeClaim(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *v1.PersistentVolumeClaim
+		err error
+	)
+
+	namespace := r.URL.Query().Get("namespace")
+	name := r.URL.Query().Get("name")
+	if s, err = c.GetOneVolumeClaim(namespace, name); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
 func (c *Client) handleGetVolumeList(w http.ResponseWriter, r *http.Request) {
 	var (
 		s   *v1.PersistentVolumeList
@@ -328,6 +346,21 @@ func (c *Client) handleGetVolumeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if s, err = c.GetVolumeList(matchLabels); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetOneVolume(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *v1.PersistentVolume
+		err error
+	)
+
+	name := r.URL.Query().Get("name")
+	if s, err = c.GetOneVolume(name); err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}
