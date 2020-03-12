@@ -13,3 +13,10 @@ func (c *Client) CheckSetup() (setup *protocol.CheckSetupRes, err error) {
 
 	return
 }
+
+// Setup setup influxdb
+func (c *Client) Setup(p *protocol.SetupParams) (err error) {
+	_, err = c.Store.Setup(context.TODO(), p)
+
+	return
+}
