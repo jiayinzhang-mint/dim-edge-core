@@ -26,6 +26,10 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/node/metrics/list", c.handleGetNodeMetricsList).Methods("GET")
 	privateRouter.HandleFunc("/node/metrics", c.handleGetOneNodeMetrics).Methods("GET")
 
+	privateRouter.HandleFunc("/replicaset/list", c.handleGetReplicaSetList).Methods("GET")
+	privateRouter.HandleFunc("/replicaset", c.handleGetSingleReplicaSet).Methods("GET")
+	privateRouter.HandleFunc("/replicaset/scale", c.handleGetSingleReplicaSet).Methods("PUT")
+
 	privateRouter.HandleFunc("/service/list", c.handleGetServiceList).Methods("GET")
 	privateRouter.HandleFunc("/service", c.handleGetSingleService).Methods("GET")
 
@@ -190,6 +194,63 @@ func (c *Client) handleGetOneNodeMetrics(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetReplicaSetList(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *appv1.ReplicaSetList
+		err error
+	)
+	namespace := r.URL.Query().Get("namespace")
+	matchLabels := make(map[string]string)
+	if serviceName := r.URL.Query().Get("serviceName"); serviceName != "" {
+		matchLabels["io.kompose.service"] = serviceName
+	}
+
+	if s, err = c.GetReplicaSetList(namespace, matchLabels); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetSingleReplicaSet(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *appv1.ReplicaSet
+		err error
+	)
+	namespace := r.URL.Query().Get("namespace")
+	name := r.URL.Query().Get("name")
+
+	if s, err = c.GetOneReplicaSet(namespace, name); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleUpdateReplicaSetScale(w http.ResponseWriter, r *http.Request) {
+	var (
+		s        *scalev1.Scale
+		newScale *scalev1.Scale
+		err      error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	newScale, err = c.UpdateReplicaSetScale(s.Namespace, s.Name, s.Spec.Replicas)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, newScale)
 	return
 }
 

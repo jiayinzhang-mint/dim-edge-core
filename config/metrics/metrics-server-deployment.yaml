@@ -29,14 +29,14 @@ spec:
           emptyDir: {}
       containers:
         - name: metrics-server
-          image: k8s.gcr.io/metrics-server-amd64:v0.3.6
+          image: registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64:v0.3.6
           args:
             - --cert-dir=/tmp
             - --secure-port=4443
           ports:
             - name: main-port
               containerPort: 4443
-              protocol: TCP
+              protocol: TCPs
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
