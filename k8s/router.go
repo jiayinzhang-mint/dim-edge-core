@@ -16,6 +16,10 @@ import (
 func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter := r.PathPrefix("/api/k8s").Subrouter()
 
+	privateRouter.HandleFunc("/deployment/list", c.handleGetDeploymentList).Methods("GET")
+	privateRouter.HandleFunc("/deployment", c.handleGetOneDeployment).Methods("GET")
+	privateRouter.HandleFunc("/deployment/scale", c.handleUpdateDeploymentScale).Methods("PUT")
+
 	privateRouter.HandleFunc("/statefulset/list", c.handleGetStatefulSetList).Methods("GET")
 	privateRouter.HandleFunc("/statefulset", c.handleGetOneStatefulSet).Methods("GET")
 	privateRouter.HandleFunc("/statefulset", c.handleCreateStatefulSet).Methods("POST")
@@ -28,7 +32,6 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 
 	privateRouter.HandleFunc("/replicaset/list", c.handleGetReplicaSetList).Methods("GET")
 	privateRouter.HandleFunc("/replicaset", c.handleGetSingleReplicaSet).Methods("GET")
-	privateRouter.HandleFunc("/replicaset/scale", c.handleGetSingleReplicaSet).Methods("PUT")
 
 	privateRouter.HandleFunc("/service/list", c.handleGetServiceList).Methods("GET")
 	privateRouter.HandleFunc("/service", c.handleGetSingleService).Methods("GET")
@@ -48,6 +51,42 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 	// privateRouter.Use(auth.CheckAuth)
 }
 
+func (c *Client) handleGetDeploymentList(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *appv1.DeploymentList
+		err error
+	)
+
+	namespace := r.URL.Query().Get("namespace")
+	matchLabels := make(map[string]string)
+	if serviceName := r.URL.Query().Get("serviceName"); serviceName != "" {
+		matchLabels["io.kompose.service"] = serviceName
+	}
+
+	if s, err = c.GetDeploymentList(namespace, matchLabels); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleGetOneDeployment(w http.ResponseWriter, r *http.Request) {
+	var (
+		s   *appv1.Deployment
+		err error
+	)
+
+	namespace := r.URL.Query().Get("namespace")
+	name := r.URL.Query().Get("name")
+	if s, err = c.GetOneDeployment(namespace, name); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
 func (c *Client) handleGetStatefulSetList(w http.ResponseWriter, r *http.Request) {
 	var (
 		s   *appv1.StatefulSetList
@@ -65,6 +104,28 @@ func (c *Client) handleGetStatefulSetList(w http.ResponseWriter, r *http.Request
 		return
 	}
 	utils.RespondWithJSON(w, r, 200, s)
+	return
+}
+
+func (c *Client) handleUpdateDeploymentScale(w http.ResponseWriter, r *http.Request) {
+	var (
+		s        *scalev1.Scale
+		newScale *scalev1.Scale
+		err      error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	newScale, err = c.UpdateDeploymentScale(s.Namespace, s.Name, s.Spec.Replicas)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, newScale)
 	return
 }
 
@@ -229,28 +290,6 @@ func (c *Client) handleGetSingleReplicaSet(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	utils.RespondWithJSON(w, r, 200, s)
-	return
-}
-
-func (c *Client) handleUpdateReplicaSetScale(w http.ResponseWriter, r *http.Request) {
-	var (
-		s        *scalev1.Scale
-		newScale *scalev1.Scale
-		err      error
-	)
-
-	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
-		utils.RespondWithError(w, r, 500, err.Error())
-		return
-	}
-
-	newScale, err = c.UpdateReplicaSetScale(s.Namespace, s.Name, s.Spec.Replicas)
-	if err != nil {
-		utils.RespondWithError(w, r, 500, err.Error())
-		return
-	}
-
-	utils.RespondWithJSON(w, r, 200, newScale)
 	return
 }
 

@@ -2,7 +2,6 @@ package k8s
 
 import (
 	appv1 "k8s.io/api/apps/v1"
-	scalev1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
@@ -21,21 +20,6 @@ func (c *Client) GetReplicaSetList(namespace string, matchLabels map[string]stri
 // GetOneReplicaSet get one running replicaset
 func (c *Client) GetOneReplicaSet(namespace string, name string) (rs *appv1.ReplicaSet, err error) {
 	rs, err = c.ClientSet.AppsV1().ReplicaSets(namespace).Get(name, metav1.GetOptions{})
-
-	return
-}
-
-// UpdateReplicaSetScale update one replicaset's scale
-func (c *Client) UpdateReplicaSetScale(namespace string, name string, replicas int32) (scale *scalev1.Scale, err error) {
-	scale, err = c.ClientSet.AppsV1().ReplicaSets(namespace).UpdateScale(name, &scalev1.Scale{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: scalev1.ScaleSpec{
-			Replicas: replicas,
-		},
-	})
 
 	return
 }
