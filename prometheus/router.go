@@ -21,10 +21,18 @@ func (c *Client) InitPrometheusAPI(r *mux.Router) {
 func (c *Client) handleQueryMetrics(w http.ResponseWriter, r *http.Request) {
 
 	var (
-		query   = r.URL.Query().Get("query")
+		query = r.URL.Query().Get("query")
+
 		end     = r.URL.Query().Get("end")
 		endTime = time.Now()
-		err     error
+
+		duration     = r.URL.Query().Get("duration")
+		durationTime = time.Minute
+
+		step     = r.URL.Query().Get("step")
+		stepTime = time.Second
+
+		err error
 	)
 
 	// parse time
@@ -32,16 +40,24 @@ func (c *Client) handleQueryMetrics(w http.ResponseWriter, r *http.Request) {
 		endTime, err = time.Parse("2006-01-02T15:04:05.000Z", end)
 	}
 
+	if duration != "" {
+		durationTime, err = time.ParseDuration(duration)
+	}
+
+	if step != "" {
+		stepTime, err = time.ParseDuration(step)
+	}
+
 	if err != nil {
-		utils.RespondWithError(w, r, 500, err.Error())
+		utils.RespondWithError(w, r, 500, "params err")
 		return
 	}
 
 	// get time range
 	timeRange := promv1.Range{
-		Start: time.Now().Add(-time.Hour),
+		Start: time.Now().Add(-durationTime),
 		End:   endTime,
-		Step:  time.Minute,
+		Step:  stepTime,
 	}
 
 	// do query
