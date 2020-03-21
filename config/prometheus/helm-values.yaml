@@ -399,7 +399,7 @@ alertmanager:
 ## Using default values from https://github.com/helm/charts/blob/master/stable/grafana/values.yaml
 ##
 grafana:
-  enabled: true
+  enabled: false
 
   ## Deploy default dashboards.
   ##
@@ -1074,7 +1074,7 @@ prometheusOperator:
     ## Service type
     ## NodePort, ClusterIP, loadbalancer
     ##
-    type: ClusterIP
+    type: NodePort
 
     ## List of IP addresses at which the Prometheus server service is available
     ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
@@ -1237,7 +1237,7 @@ prometheus:
   service:
     annotations: {}
     labels: {}
-    clusterIP: ''
+    # clusterIP: ''
 
     ## Port for Prometheus Service to listen on
     ##
@@ -1262,7 +1262,7 @@ prometheus:
     loadBalancerSourceRanges: []
     ## Service type
     ##
-    type: ClusterIP
+    type: NodePort
 
     sessionAffinity: ''
 
