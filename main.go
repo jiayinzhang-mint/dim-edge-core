@@ -3,6 +3,7 @@ package main
 import (
 	"dim-edge-core/k8s"
 	"dim-edge-core/node"
+	"dim-edge-core/prometheus"
 	"io"
 	"net/http"
 	"os"
@@ -22,7 +23,7 @@ func connectToK8S(c *k8s.Client) (err error) {
 	return
 }
 
-func handleRequests(c *k8s.Client, gc *node.Client) (err error) {
+func handleRequests(c *k8s.Client, gc *node.Client, pc *prometheus.Client) (err error) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +32,7 @@ func handleRequests(c *k8s.Client, gc *node.Client) (err error) {
 
 	c.InitK8SAPI(router)
 	gc.InitEdgeNodeAPI(router)
+	pc.InitPrometheusAPI(router)
 
 	addr := ":5000"
 
@@ -49,6 +51,10 @@ var (
 )
 
 func main() {
+	var (
+		err error
+	)
+
 	logrus.Info("👀 dim-edge-core service starting")
 
 	// create k8s client
@@ -56,20 +62,27 @@ func main() {
 		Path: homeDir(),
 	}
 
-	// create edge-node grpc client
-	gc := &node.Client{
-		Address: "192.168.64.14:30028",
-	}
-
-	var (
-		err error
-	)
-
 	// connect to k8s instance
 	err = connectToK8S(c)
 	if err != nil {
 		logrus.Fatal(err)
 		os.Exit(1)
+	}
+
+	// create prometheus client
+	pc := &prometheus.Client{
+		Address: "http://192.168.64.16:30090",
+	}
+
+	err = pc.ConnectToInstance()
+	if err != nil {
+		logrus.Fatal(err)
+		os.Exit(1)
+	}
+
+	// create edge-node grpc client
+	gc := &node.Client{
+		Address: "192.168.64.16:31404",
 	}
 
 	// connect to edge-node grpc instance
@@ -80,7 +93,7 @@ func main() {
 	}
 
 	// start http service
-	err = handleRequests(c, gc)
+	err = handleRequests(c, gc, pc)
 	if err != nil {
 		logrus.Fatal(err)
 		os.Exit(1)

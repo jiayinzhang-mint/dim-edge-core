@@ -1,49 +1,35 @@
 package prometheus
 
 import (
-	"context"
-	"fmt"
 	"os"
-	"time"
 
 	promapi "github.com/prometheus/client_golang/api"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/sirupsen/logrus"
 )
 
 // Client prometheus client
 type Client struct {
 	Address    string `json:"address"`
 	Prometheus promapi.Client
+	API        promv1.API
 }
 
 // ConnectToInstance connect to prometheus service
 func (c *Client) ConnectToInstance() (err error) {
+	// create client
 	c.Prometheus, err = promapi.NewClient(promapi.Config{
 		Address: c.Address,
 	})
 	if err != nil {
-		fmt.Printf("Error creating client: %v\n", err)
+		logrus.Error("💣 error creating prometheus client: ", err)
 		os.Exit(1)
 	}
 
-	v1api := promv1.NewAPI(c.Prometheus)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	r := promv1.Range{
-		Start: time.Now().Add(-time.Hour),
-		End:   time.Now(),
-		Step:  time.Minute,
-	}
-	result, warnings, err := v1api.QueryRange(ctx,
-		`container_memory_working_set_bytes{container="dim-edge-influxdb",service="dim-edge-mon-prometheus-op-kubelet"}`,
-		r)
-	if err != nil {
-		fmt.Printf("Error querying Prometheus: %v\n", err)
-		os.Exit(1)
-	}
-	if len(warnings) > 0 {
-		fmt.Printf("Warnings: %v\n", warnings)
-	}
-	fmt.Printf("Result:\n%v\n", result)
+	logrus.Info("🥳 dim-edge-core connected to prometheus service at ", c.Address)
+
+	// registor api
+	c.API = promv1.NewAPI(c.Prometheus)
+
 	return
 }
