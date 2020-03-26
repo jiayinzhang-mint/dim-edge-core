@@ -1,8 +1,9 @@
 package main
 
 import (
+	"dim-edge-core/auth"
 	"dim-edge-core/k8s"
-	"dim-edge-core/node"
+	"dim-edge-core/node/influxdb"
 	"dim-edge-core/prometheus"
 	"io"
 	"net/http"
@@ -23,7 +24,7 @@ func connectToK8S(c *k8s.Client) (err error) {
 	return
 }
 
-func handleRequests(c *k8s.Client, gc *node.Client, pc *prometheus.Client) (err error) {
+func handleRequests(c *k8s.Client, gc *influxdb.Client, pc *prometheus.Client) (err error) {
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +34,7 @@ func handleRequests(c *k8s.Client, gc *node.Client, pc *prometheus.Client) (err 
 	c.InitK8SAPI(router)
 	gc.InitEdgeNodeAPI(router)
 	pc.InitPrometheusAPI(router)
+	auth.InitAuthAPI(router)
 
 	addr := ":5000"
 
@@ -81,8 +83,8 @@ func main() {
 	}
 
 	// create edge-node grpc client
-	gc := &node.Client{
-		Address: "192.168.64.16:31404",
+	gc := &influxdb.Client{
+		Address: "127.0.0.1:9090",
 	}
 
 	// connect to edge-node grpc instance
