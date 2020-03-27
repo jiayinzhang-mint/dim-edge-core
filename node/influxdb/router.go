@@ -15,7 +15,10 @@ func (c *Client) InitEdgeNodeAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/influxdb/setup", c.handleCheckSetup).Methods("GET")
 	privateRouter.HandleFunc("/influxdb/setup", c.handleSetup).Methods("POST")
 
-	privateRouter.HandleFunc("/influxdb/authorization", c.handleCheckSetup).Methods("GET")
+	privateRouter.HandleFunc("/influxdb/signin", c.handleSignIn).Methods("POST")
+	privateRouter.HandleFunc("/influxdb/signout", c.handleSignOut).Methods("POST")
+
+	privateRouter.HandleFunc("/influxdb/authorization", c.handleGetAuthorization).Methods("GET")
 }
 
 func (c *Client) handleCheckSetup(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +66,43 @@ func (c *Client) handleGetAuthorization(w http.ResponseWriter, r *http.Request) 
 	)
 	a, err = c.ListAuthorization(&p)
 	if err != nil {
-		utils.RespondWithError(w, r, 500, err.Error())
+		utils.RespondWithError(w, r, 401, err.Error())
 		return
 	}
 	utils.RespondWithJSON(w, r, 200, a)
+	return
+}
+
+func (c *Client) handleSignIn(w http.ResponseWriter, r *http.Request) {
+	var (
+		p   *protocol.SignInParams
+		err error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	if err = c.SignIn(p); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]string{
+		"msg": "success",
+	})
+	return
+}
+
+func (c *Client) handleSignOut(w http.ResponseWriter, r *http.Request) {
+	if err := c.SignOut(); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]string{
+		"msg": "success",
+	})
 	return
 }
