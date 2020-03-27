@@ -5,6 +5,7 @@ import (
 	"dim-edge-core/utils"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -19,6 +20,9 @@ func (c *Client) InitEdgeNodeAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/influxdb/signout", c.handleSignOut).Methods("POST")
 
 	privateRouter.HandleFunc("/influxdb/authorization", c.handleGetAuthorization).Methods("GET")
+
+	privateRouter.HandleFunc("/influxdb/bucket/list", c.handleListAllBuckets).Methods("GET")
+	privateRouter.HandleFunc("/influxdb/bucket", c.handleRetreiveBucket).Methods("GET")
 }
 
 func (c *Client) handleCheckSetup(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +31,10 @@ func (c *Client) handleCheckSetup(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, r, 500, err.Error())
 		return
 	}
-	utils.RespondWithJSON(w, r, 200, res)
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg":   "success",
+		"setup": res.Setup,
+	})
 	return
 }
 
@@ -47,7 +54,7 @@ func (c *Client) handleSetup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, r, 200, map[string]string{
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
 		"msg": "success",
 	})
 	return
@@ -69,7 +76,10 @@ func (c *Client) handleGetAuthorization(w http.ResponseWriter, r *http.Request) 
 		utils.RespondWithError(w, r, 401, err.Error())
 		return
 	}
-	utils.RespondWithJSON(w, r, 200, a)
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg":           "success",
+		"authorization": a,
+	})
 	return
 }
 
@@ -89,7 +99,7 @@ func (c *Client) handleSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, r, 200, map[string]string{
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
 		"msg": "success",
 	})
 	return
@@ -101,8 +111,58 @@ func (c *Client) handleSignOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondWithJSON(w, r, 200, map[string]string{
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
 		"msg": "success",
+	})
+	return
+}
+
+func (c *Client) handleListAllBuckets(w http.ResponseWriter, r *http.Request) {
+	pageInt, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	sizeInt, _ := strconv.Atoi(r.URL.Query().Get("size"))
+	var (
+		p = &protocol.ListAllBucketsParams{
+			Page:  int32(pageInt),
+			Size:  int32(sizeInt),
+			Org:   r.URL.Query().Get("org"),
+			OrgID: r.URL.Query().Get("orgID"),
+			Name:  r.URL.Query().Get("name"),
+		}
+		b   []*protocol.Bucket
+		err error
+	)
+
+	b, err = c.ListAllBuckets(p)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg":    "success",
+		"bucket": b,
+	})
+	return
+}
+
+func (c *Client) handleRetreiveBucket(w http.ResponseWriter, r *http.Request) {
+	var (
+		p = &protocol.RetrieveBucketParams{
+			BucketID: r.URL.Query().Get("bucketID"),
+		}
+		b   *protocol.Bucket
+		err error
+	)
+
+	b, err = c.RetrieveBucket(p)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg":    "success",
+		"bucket": b,
 	})
 	return
 }
