@@ -14,5 +14,9 @@ func (c *Client) QueryData(p *protocol.QueryParams) (r *protocol.QueryRes, err e
 // InsertData insert data
 func (c *Client) InsertData(p *protocol.InsertDataParams) (r *protocol.InsertDataRes, err error) {
 	r, err = c.Store.InsertData(context.TODO(), p)
+	if err != nil {
+		return
+	}
+
 	return
 }

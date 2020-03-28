@@ -10,6 +10,9 @@
       "request": "launch",
       "mode": "debug",
       "program": "${workspaceFolder}"
+      // "env": {
+      //   "nodeGRPCAddress": "127.0.0.1:9090"
+      // }
     }
   ]
 }

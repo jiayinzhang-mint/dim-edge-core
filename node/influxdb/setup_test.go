@@ -10,7 +10,7 @@ import (
 
 func TestCheckSetup(*testing.T) {
 	c := &Client{
-		Address: "192.168.64.16:32532",
+		Address: "127.0.0.1:9090",
 	}
 	if err := c.New(); err != nil {
 		logrus.Error(err)
