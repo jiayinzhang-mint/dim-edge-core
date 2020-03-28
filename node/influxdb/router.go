@@ -23,6 +23,9 @@ func (c *Client) InitEdgeNodeAPI(r *mux.Router) {
 
 	privateRouter.HandleFunc("/influxdb/bucket/list", c.handleListAllBuckets).Methods("GET")
 	privateRouter.HandleFunc("/influxdb/bucket", c.handleRetreiveBucket).Methods("GET")
+
+	privateRouter.HandleFunc("/influxdb/query", c.handleQueryData).Methods("GET")
+	privateRouter.HandleFunc("/influxdb/insert", c.handleInsertData).Methods("POST")
 }
 
 func (c *Client) handleCheckSetup(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +166,54 @@ func (c *Client) handleRetreiveBucket(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
 		"msg":    "success",
 		"bucket": b,
+	})
+	return
+}
+
+func (c *Client) handleQueryData(w http.ResponseWriter, r *http.Request) {
+	var (
+		p = &protocol.QueryParams{
+			Org:         r.URL.Query().Get("org"),
+			QueryString: r.URL.Query().Get("queryString"),
+		}
+		res *protocol.QueryRes
+		err error
+	)
+
+	res, err = c.QueryData(p)
+	if err != nil {
+		utils.RespondWithError(w, r, 400, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg": "success",
+		"res": res,
+	})
+	return
+}
+
+func (c *Client) handleInsertData(w http.ResponseWriter, r *http.Request) {
+	var (
+		p   *protocol.InsertDataParams
+		res *protocol.InsertDataRes
+		err error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	res, err = c.InsertData(p)
+	if err != nil {
+		utils.RespondWithError(w, r, 500, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
+		"msg":   "success",
+		"count": res.Count,
 	})
 	return
 }
