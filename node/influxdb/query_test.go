@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestQueryData(t *testing.T) {
+func TestInsertData(t *testing.T) {
 	c := &Client{
 		Address: "127.0.0.1:9090",
 	}
@@ -43,4 +43,34 @@ func TestQueryData(t *testing.T) {
 		t.Error(err)
 	}
 
+}
+
+func TestQueryData(*testing.T) {
+	c := &Client{
+		Address: "127.0.0.1:9090",
+	}
+	if err := c.New(); err != nil {
+		logrus.Error(err)
+	}
+
+	err := c.SignIn(&protocol.SignInParams{
+		Username: "mint",
+		Password: "131001250115zHzH",
+	})
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	res, err := c.QueryData(&protocol.QueryParams{
+		QueryString: `from(bucket: "insdim")
+		|> range(start: -10h)
+		|> filter(fn: (r)=>
+			r._field == "cpu" and
+			r._measurement == "system-metrics" and
+			r.hostname == "hal9000"
+		)`,
+		Org: "insdim",
+	})
+
+	logrus.Info(res)
 }
