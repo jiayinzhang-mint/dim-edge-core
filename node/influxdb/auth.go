@@ -25,6 +25,12 @@ func (c *Client) CreateAuthorization(p *protocol.CreateAuthorizationParams) (a *
 	return
 }
 
+// RetrieveAuthorization retrieve one authorization with auth id
+func (c *Client) RetrieveAuthorization(p *protocol.RetrieveAuthorizationParams) (a *protocol.Authorization, err error) {
+	a, err = c.Store.RetrieveAuthorization(context.TODO(), p)
+	return
+}
+
 // SignIn sign into influxdb
 func (c *Client) SignIn(p *protocol.SignInParams) (err error) {
 	_, err = c.Store.SignIn(context.TODO(), p)
@@ -35,6 +41,13 @@ func (c *Client) SignIn(p *protocol.SignInParams) (err error) {
 // SignOut quit influxdb
 func (c *Client) SignOut() (err error) {
 	_, err = c.Store.SignOut(context.TODO(), &empty.Empty{})
+
+	return
+}
+
+// GetMe get my info after signing in
+func (c *Client) GetMe() (me *protocol.Me, err error) {
+	me, err = c.Store.GetMe(context.TODO(), &empty.Empty{})
 
 	return
 }

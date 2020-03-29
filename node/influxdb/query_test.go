@@ -30,7 +30,7 @@ func TestQueryData(t *testing.T) {
 			Bucket: "insdim",
 			Metrics: []*protocol.RowMetric{
 				&protocol.RowMetric{
-					Fields: map[string]float64{"memory": 1000, "cpu": 0.93},
+					Fields: map[string]float64{"memory": 1000.0, "cpu": 0.93},
 					Name:   "system-metrics",
 					Tags:   map[string]string{"hostname": "hal9000"},
 					Ts:     ptypes.TimestampNow(),
