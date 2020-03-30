@@ -937,6 +937,9 @@ kube-state-metrics:
     create: true
   podSecurityPolicy:
     enabled: true
+  image:
+    repository: quay.azk8s.cn/coreos/kube-state-metrics
+    tag: v1.9.4
 
 ## Deploy node exporter as a daemonset to all nodes
 ##
@@ -1212,7 +1215,7 @@ prometheusOperator:
   ## Hyperkube image to use when cleaning up
   ##
   hyperkubeImage:
-    repository: k8s.gcr.io/hyperkube
+    repository: gcr.azk8s.cn/google_containers/hyperkube
     tag: v1.12.1
     pullPolicy: IfNotPresent
 

@@ -36,7 +36,7 @@ spec:
           ports:
             - name: main-port
               containerPort: 4443
-              protocol: TCPs
+              protocol: TCP
           securityContext:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
