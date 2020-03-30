@@ -73,7 +73,7 @@ func main() {
 
 	// create prometheus client
 	pc := &prometheus.Client{
-		Address: "http://192.168.64.16:30090",
+		Address: "http://192.168.64.18:30090",
 	}
 
 	err = pc.ConnectToInstance()
