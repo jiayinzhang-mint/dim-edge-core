@@ -2,11 +2,9 @@ package influxdb
 
 import (
 	"dim-edge-core/protocol"
-	"encoding/json"
 	"testing"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,27 +24,16 @@ func TestInsertData(t *testing.T) {
 		logrus.Error(err)
 	}
 
-	fields := map[string]interface{}{"memory": 1000.0, "cpu": 0.93}
+	fields := map[string]float64{"memory": 1000.0, "cpu": 0.93}
 	logrus.Info(fields)
-
-	anyMap := make(map[string]*any.Any)
-	for k, f := range fields {
-		fb, _ := json.Marshal(f)
-		anyMap[k] = &any.Any{Value: fb}
-	}
-
-	var mapin interface{}
-	for _, f := range anyMap {
-		json.Unmarshal(f.Value, &mapin)
-	}
 
 	count, err := c.InsertData(
 		&protocol.InsertDataParams{
-			Org:    "insdim",
-			Bucket: "insdim",
+			Org:    "INSDIM",
+			Bucket: "INSDIM",
 			Metrics: []*protocol.RowMetric{
 				&protocol.RowMetric{
-					Fields: anyMap,
+					Fields: fields,
 					Name:   "system-metrics",
 					Tags:   map[string]string{"hostname": "hal9000"},
 					Ts:     ptypes.TimestampNow(),
@@ -80,14 +67,14 @@ func TestQueryData(*testing.T) {
 	}
 
 	res, err := c.QueryData(&protocol.QueryParams{
-		QueryString: `from(bucket: "insdim")
+		QueryString: `from(bucket: "INSDIM")
 		|> range(start: -10h)
 		|> filter(fn: (r)=>
 			r._field == "cpu" and
 			r._measurement == "system-metrics" and
 			r.hostname == "hal9000"
 		)`,
-		Org: "insdim",
+		Org: "INSDIM",
 	})
 
 	logrus.Info(res)

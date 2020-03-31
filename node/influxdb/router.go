@@ -187,8 +187,8 @@ func (c *Client) handleQueryData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.RespondWithJSON(w, r, 200, map[string]interface{}{
-		"msg": "success",
-		"res": res,
+		"msg":    "success",
+		"record": res.Record,
 	})
 	return
 }
