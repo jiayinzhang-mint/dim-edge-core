@@ -17,7 +17,7 @@ func (c *Client) InitPrometheusAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/query", c.handleQuery).Methods("GET")
 	privateRouter.HandleFunc("/query/range", c.handleQueryRange).Methods("GET")
 
-	privateRouter.HandleFunc("/alert", c.handleQueryRange).Methods("GET")
+	privateRouter.HandleFunc("/alert", c.handleGetAlert).Methods("GET")
 
 	// privateRouter.Use(auth.CheckAuth)
 }

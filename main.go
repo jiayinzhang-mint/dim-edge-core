@@ -84,7 +84,7 @@ func main() {
 
 	// create edge-node grpc client
 	gc := &influxdb.Client{
-		Address: "127.0.0.1:9090",
+		Address: "192.168.64.18:32754",
 	}
 
 	// connect to edge-node grpc instance
