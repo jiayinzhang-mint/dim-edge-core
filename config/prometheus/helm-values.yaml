@@ -253,7 +253,7 @@ alertmanager:
     ## Image of Alertmanager
     ##
     image:
-      repository: quay.azk8s.cn/prometheus/alertmanager
+      repository: quay.io/prometheus/alertmanager
       tag: v0.20.0
 
     ## If true then the user will be responsible to provide a secret with alertmanager configuration
@@ -938,7 +938,7 @@ kube-state-metrics:
   podSecurityPolicy:
     enabled: true
   image:
-    repository: quay.azk8s.cn/coreos/kube-state-metrics
+    repository: quay.io/coreos/kube-state-metrics
     tag: v1.9.4
 
 ## Deploy node exporter as a daemonset to all nodes
@@ -982,7 +982,7 @@ nodeExporter:
 ##
 prometheus-node-exporter:
   image:
-    repository: quay.azk8s.cn/prometheus/node-exporter
+    repository: quay.io/prometheus/node-exporter
     tag: v0.18.1
 
   podLabels:
@@ -1192,20 +1192,20 @@ prometheusOperator:
   ## Prometheus-operator image
   ##
   image:
-    repository: quay.azk8s.cn/coreos/prometheus-operator
+    repository: quay.io/coreos/prometheus-operator
     tag: v0.37.0
     pullPolicy: IfNotPresent
 
   ## Configmap-reload image to use for reloading configmaps
   ##
   configmapReloadImage:
-    repository: quay.azk8s.cn/coreos/configmap-reload
+    repository: quay.io/coreos/configmap-reload
     tag: v0.0.1
 
   ## Prometheus-config-reloader image to use for config and rule reloading
   ##
   prometheusConfigReloaderImage:
-    repository: quay.azk8s.cn/coreos/prometheus-config-reloader
+    repository: quay.io/coreos/prometheus-config-reloader
     tag: v0.37.0
 
   ## Set the prometheus config reloader side-car CPU limit
@@ -1430,7 +1430,7 @@ prometheus:
     ## Image of Prometheus.
     ##
     image:
-      repository: quay.azk8s.cn/prometheus/prometheus
+      repository: quay.io/prometheus/prometheus
       tag: v2.15.2
 
     ## Tolerations for use with node taints
