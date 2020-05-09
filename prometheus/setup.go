@@ -26,7 +26,7 @@ func (c *Client) ConnectToInstance() (err error) {
 		os.Exit(1)
 	}
 
-	logrus.Info("🥳 dim-edge-core connected to prometheus service at ", c.Address)
+	logrus.Info("🥳 dim-edge/core connected to prometheus service at ", c.Address)
 
 	// registor api
 	c.API = promv1.NewAPI(c.Prometheus)

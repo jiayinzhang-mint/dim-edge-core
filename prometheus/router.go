@@ -2,7 +2,7 @@ package prometheus
 
 import (
 	"context"
-	"dim-edge-core/utils"
+	"dim-edge/core/utils"
 	"net/http"
 	"time"
 

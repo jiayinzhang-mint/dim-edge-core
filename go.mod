@@ -1,4 +1,4 @@
-module dim-edge-core
+module dim-edge/core
 
 go 1.13
 
@@ -16,6 +16,6 @@ require (
 	google.golang.org/grpc v1.29.1
 	k8s.io/api v0.18.2
 	k8s.io/apimachinery v0.18.2
-	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/client-go v0.18.2
 	k8s.io/metrics v0.18.2
 )

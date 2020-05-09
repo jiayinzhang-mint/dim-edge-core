@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"dim-edge-core/utils"
+	"dim-edge/core/utils"
 	"fmt"
 	"net/http"
 	"strings"

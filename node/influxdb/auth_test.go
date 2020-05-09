@@ -1,7 +1,7 @@
 package influxdb
 
 import (
-	"dim-edge-core/protocol"
+	"dim-edge/core/protocol"
 	"testing"
 
 	"github.com/sirupsen/logrus"

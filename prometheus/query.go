@@ -2,7 +2,7 @@ package prometheus
 
 import (
 	"context"
-	"dim-edge-core/utils"
+	"dim-edge/core/utils"
 
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"

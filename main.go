@@ -1,10 +1,10 @@
 package main
 
 import (
-	"dim-edge-core/auth"
-	"dim-edge-core/k8s"
-	"dim-edge-core/node/influxdb"
-	"dim-edge-core/prometheus"
+	"dim-edge/core/auth"
+	"dim-edge/core/k8s"
+	"dim-edge/core/node/influxdb"
+	"dim-edge/core/prometheus"
 	"io"
 	"net/http"
 	"os"
@@ -19,11 +19,11 @@ var nodeGRPCPort = ":32622"
 
 func connectToK8S(c *k8s.Client) (err error) {
 	if err = c.ConnectToInstance(); err != nil {
-		logrus.Error("dim-edge-core failed to connect to k8s", err)
+		logrus.Error("dim-edge/core failed to connect to k8s", err)
 		return
 	}
 
-	logrus.Info("🥳 dim-edge-core connected to k8s minikube service at ", c.Path)
+	logrus.Info("🥳 dim-edge/core connected to k8s minikube service at ", c.Path)
 	return
 }
 
@@ -31,7 +31,7 @@ func handleRequests(c *k8s.Client, gc *influxdb.Client, pc *prometheus.Client) (
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "dim-edge-core REST service listening")
+		io.WriteString(w, "dim-edge/core REST service listening")
 	}).Methods("GET")
 
 	c.InitK8SAPI(router)
@@ -41,10 +41,10 @@ func handleRequests(c *k8s.Client, gc *influxdb.Client, pc *prometheus.Client) (
 
 	addr := ":5000"
 
-	logrus.Info("🤣 dim-edge-core HTTP service started at ", addr)
+	logrus.Info("🤣 dim-edge/core HTTP service started at ", addr)
 	err = http.ListenAndServe(addr, router)
 	if err != nil {
-		logrus.Error("💣 dim-edge-core HTTP service failed to start", err)
+		logrus.Error("💣 dim-edge/core HTTP service failed to start", err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func main() {
 		err error
 	)
 
-	logrus.Info("👀 dim-edge-core service starting")
+	logrus.Info("👀 dim-edge/core service starting")
 
 	// create k8s client
 	c := &k8s.Client{

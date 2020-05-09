@@ -1,7 +1,7 @@
 package k8s
 
 import (
-	"dim-edge-core/utils"
+	"dim-edge/core/utils"
 	"encoding/json"
 	"net/http"
 

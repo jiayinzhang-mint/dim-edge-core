@@ -2,7 +2,7 @@ package influxdb
 
 import (
 	"context"
-	"dim-edge-core/protocol"
+	"dim-edge/core/protocol"
 )
 
 // QueryData query data

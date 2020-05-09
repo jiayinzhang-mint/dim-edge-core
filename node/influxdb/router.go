@@ -1,8 +1,8 @@
 package influxdb
 
 import (
-	"dim-edge-core/protocol"
-	"dim-edge-core/utils"
+	"dim-edge/core/protocol"
+	"dim-edge/core/utils"
 	"encoding/json"
 	"net/http"
 	"strconv"
