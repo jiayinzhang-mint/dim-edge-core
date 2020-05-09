@@ -1,6 +1,8 @@
 package k8s
 
 import (
+	"context"
+
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -10,7 +12,7 @@ import (
 func (c *Client) GetVolumeClaimList(namespace string, matchLabels map[string]string) (v *v1.PersistentVolumeClaimList, err error) {
 	labelSelector := metav1.LabelSelector{MatchLabels: matchLabels}
 
-	v, err = c.ClientSet.CoreV1().PersistentVolumeClaims(namespace).List(metav1.ListOptions{
+	v, err = c.ClientSet.CoreV1().PersistentVolumeClaims(namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	})
 
@@ -20,7 +22,7 @@ func (c *Client) GetVolumeClaimList(namespace string, matchLabels map[string]str
 // GetOneVolumeClaim get one persistent volume claim
 func (c *Client) GetOneVolumeClaim(namespace string, name string) (v *v1.PersistentVolumeClaim, err error) {
 
-	v, err = c.ClientSet.CoreV1().PersistentVolumeClaims(namespace).Get(name, metav1.GetOptions{})
+	v, err = c.ClientSet.CoreV1().PersistentVolumeClaims(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 
 	return
 }
@@ -29,7 +31,7 @@ func (c *Client) GetOneVolumeClaim(namespace string, name string) (v *v1.Persist
 func (c *Client) GetVolumeList(matchLabels map[string]string) (v *v1.PersistentVolumeList, err error) {
 	labelSelector := metav1.LabelSelector{MatchLabels: matchLabels}
 
-	v, err = c.ClientSet.CoreV1().PersistentVolumes().List(metav1.ListOptions{
+	v, err = c.ClientSet.CoreV1().PersistentVolumes().List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	})
 
@@ -39,7 +41,7 @@ func (c *Client) GetVolumeList(matchLabels map[string]string) (v *v1.PersistentV
 // GetOneVolume get one persistent volume
 func (c *Client) GetOneVolume(name string) (v *v1.PersistentVolume, err error) {
 
-	v, err = c.ClientSet.CoreV1().PersistentVolumes().Get(name, metav1.GetOptions{})
+	v, err = c.ClientSet.CoreV1().PersistentVolumes().Get(context.TODO(), name, metav1.GetOptions{})
 
 	return
 }

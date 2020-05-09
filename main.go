@@ -14,6 +14,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var minikubeIP = "192.168.64.22"
+var nodeGRPCPort = ":32622"
+
 func connectToK8S(c *k8s.Client) (err error) {
 	if err = c.ConnectToInstance(); err != nil {
 		logrus.Error("dim-edge-core failed to connect to k8s", err)
@@ -73,7 +76,7 @@ func main() {
 
 	// create prometheus client
 	pc := &prometheus.Client{
-		Address: "http://192.168.64.18:30090",
+		Address: "http://" + minikubeIP + ":30090",
 	}
 
 	err = pc.ConnectToInstance()
@@ -84,7 +87,7 @@ func main() {
 
 	// create edge-node grpc client
 	gc := &influxdb.Client{
-		Address: "192.168.64.18:32754",
+		Address: minikubeIP + nodeGRPCPort,
 	}
 
 	// connect to edge-node grpc instance
