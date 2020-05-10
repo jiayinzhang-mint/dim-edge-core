@@ -32,7 +32,7 @@ func TestInsertData(t *testing.T) {
 			Org:    "INSDIM",
 			Bucket: "INSDIM",
 			Metrics: []*protocol.RowMetric{
-				&protocol.RowMetric{
+				{
 					Fields: fields,
 					Name:   "system-metrics",
 					Tags:   map[string]string{"hostname": "hal9000"},

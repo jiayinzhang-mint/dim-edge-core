@@ -15,11 +15,11 @@ import (
 )
 
 var minikubeIP = "192.168.64.22"
-var nodeGRPCPort = ":32622"
+var nodeGRPCPort = ":30299"
 
 func connectToK8S(c *k8s.Client) (err error) {
 	if err = c.ConnectToInstance(); err != nil {
-		logrus.Error("dim-edge/core failed to connect to k8s", err)
+		logrus.Error("💣 dim-edge/core failed to connect to k8s", err)
 		return
 	}
 
