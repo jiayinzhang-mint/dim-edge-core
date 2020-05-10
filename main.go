@@ -14,8 +14,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var minikubeIP = "192.168.64.22"
-var nodeGRPCPort = ":30299"
+var minikubeIP = "127.0.0.1"
+var nodeGRPCPort = ":9090"
 
 func connectToK8S(c *k8s.Client) (err error) {
 	if err = c.ConnectToInstance(); err != nil {
@@ -28,6 +28,7 @@ func connectToK8S(c *k8s.Client) (err error) {
 }
 
 func handleRequests(c *k8s.Client, gc *influxdb.Client, pc *prometheus.Client) (err error) {
+
 	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

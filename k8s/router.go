@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	ot "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	appv1 "k8s.io/api/apps/v1"
 	scalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -13,7 +15,9 @@ import (
 )
 
 // InitK8SAPI init k8s REST api
-func (c *Client) InitK8SAPI(r *mux.Router) {
+func (c *Client) InitK8SAPI(r *mux.Router) (err error) {
+
+	// handle http call
 	privateRouter := r.PathPrefix("/api/k8s").Subrouter()
 
 	privateRouter.HandleFunc("/deployment/list", c.handleGetDeploymentList).Methods("GET")
@@ -49,6 +53,8 @@ func (c *Client) InitK8SAPI(r *mux.Router) {
 	privateRouter.HandleFunc("/namespace/list", c.handleGetNamespaceList).Methods("GET")
 
 	// privateRouter.Use(auth.CheckAuth)
+
+	return
 }
 
 func (c *Client) handleGetDeploymentList(w http.ResponseWriter, r *http.Request) {
@@ -298,6 +304,11 @@ func (c *Client) handleGetServiceList(w http.ResponseWriter, r *http.Request) {
 		s   *v1.ServiceList
 		err error
 	)
+
+	spanCtx, _ := c.Tracer.Extract(ot.HTTPHeaders, ot.HTTPHeadersCarrier(r.Header))
+	span := c.Tracer.StartSpan("getServiceList", ext.RPCServerOption(spanCtx))
+	defer span.Finish()
+
 	namespace := r.URL.Query().Get("namespace")
 	matchLabels := make(map[string]string)
 	if serviceName := r.URL.Query().Get("serviceName"); serviceName != "" {

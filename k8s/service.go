@@ -10,6 +10,7 @@ import (
 
 // GetServiceList get running service list
 func (c *Client) GetServiceList(namespace string, matchLabels map[string]string) (services *v1.ServiceList, err error) {
+
 	labelSelector := metav1.LabelSelector{MatchLabels: matchLabels}
 
 	services, err = c.ClientSet.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{

@@ -11,7 +11,8 @@ import (
 )
 
 // InitEdgeNodeAPI init k8s REST api
-func (c *Client) InitEdgeNodeAPI(r *mux.Router) {
+func (c *Client) InitEdgeNodeAPI(r *mux.Router) (err error) {
+
 	privateRouter := r.PathPrefix("/api/edgenode").Subrouter()
 	privateRouter.HandleFunc("/influxdb/setup", c.handleCheckSetup).Methods("GET")
 	privateRouter.HandleFunc("/influxdb/setup", c.handleSetup).Methods("POST")
@@ -26,9 +27,12 @@ func (c *Client) InitEdgeNodeAPI(r *mux.Router) {
 
 	privateRouter.HandleFunc("/influxdb/query", c.handleQueryData).Methods("GET")
 	privateRouter.HandleFunc("/influxdb/insert", c.handleInsertData).Methods("POST")
+
+	return
 }
 
 func (c *Client) handleCheckSetup(w http.ResponseWriter, r *http.Request) {
+
 	res, err := c.CheckSetup()
 	if err != nil {
 		utils.RespondWithError(w, r, 500, err.Error())
