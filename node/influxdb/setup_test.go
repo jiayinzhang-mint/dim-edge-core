@@ -19,8 +19,7 @@ func TestCheckSetup(*testing.T) {
 		logrus.Error(err)
 	}
 
-	span := c.GRPCTracer.StartSpan("/Store/CheckSetup")
-	defer c.GRPCTraceCloser.Close()
+	span := c.Tracer.StartSpan("/Store/CheckSetup")
 	defer span.Finish()
 	ctx := opentracing.ContextWithSpan(context.Background(), span)
 

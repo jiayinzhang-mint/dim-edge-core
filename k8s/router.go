@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	ot "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	appv1 "k8s.io/api/apps/v1"
 	scalev1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
@@ -304,10 +302,6 @@ func (c *Client) handleGetServiceList(w http.ResponseWriter, r *http.Request) {
 		s   *v1.ServiceList
 		err error
 	)
-
-	spanCtx, _ := c.Tracer.Extract(ot.HTTPHeaders, ot.HTTPHeadersCarrier(r.Header))
-	span := c.Tracer.StartSpan("getServiceList", ext.RPCServerOption(spanCtx))
-	defer span.Finish()
 
 	namespace := r.URL.Query().Get("namespace")
 	matchLabels := make(map[string]string)

@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"flag"
-	"io"
 	"path/filepath"
 
 	ot "github.com/opentracing/opentracing-go"
@@ -17,7 +16,6 @@ type Client struct {
 	ClientSet        *kubernetes.Clientset
 	MetricsClientSet *metricsv.Clientset
 	Tracer           ot.Tracer
-	TraceCloser      io.Closer
 }
 
 // ConnectToInstance connect to k8s

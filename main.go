@@ -10,12 +10,15 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
+	"github.com/uber/jaeger-client-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
 	"golang.org/x/sync/errgroup"
 )
 
-var minikubeIP = "127.0.0.1"
-var nodeGRPCPort = ":9090"
+var minikubeIP = "192.168.64.22"
+var nodeGRPCPort = ":32198"
 
 func connectToK8S(c *k8s.Client) (err error) {
 	if err = c.ConnectToInstance(); err != nil {
@@ -58,14 +61,37 @@ var (
 
 func main() {
 	var (
-		err error
+		tracer opentracing.Tracer
+		err    error
 	)
 
 	logrus.Info("👀 dim-edge/core service starting")
 
+	// Init a new tracer
+	jcfg := jaegercfg.Configuration{
+		ServiceName: "dim-edge-core",
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans: true,
+		},
+	}
+
+	tracer, _, err = jcfg.NewTracer(
+		jaegercfg.Logger(jaeger.StdLogger),
+	)
+	if err != nil {
+		return
+	}
+
+	opentracing.SetGlobalTracer(tracer)
+
 	// create k8s client
 	c := &k8s.Client{
-		Path: homeDir(),
+		Path:   homeDir(),
+		Tracer: tracer,
 	}
 
 	// connect to k8s instance
@@ -78,6 +104,7 @@ func main() {
 	// create prometheus client
 	pc := &prometheus.Client{
 		Address: "http://" + minikubeIP + ":30090",
+		Tracer:  tracer,
 	}
 
 	err = pc.ConnectToInstance()
@@ -89,6 +116,7 @@ func main() {
 	// create edge-node grpc client
 	gc := &influxdb.Client{
 		Address: minikubeIP + nodeGRPCPort,
+		Tracer:  tracer,
 	}
 
 	// connect to edge-node grpc instance
